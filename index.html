@@ -1,0 +1,1768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StoryLabKit — Dispositivos de Engenharia Social</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --card: #1a1a26;
+    --border: #2a2a3d;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --accent-glow: rgba(124,58,237,0.3);
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --green: #22c55e;
+    --blue: #3b82f6;
+    --orange: #f97316;
+    --pink: #ec4899;
+    --yellow: #eab308;
+    --teal: #14b8a6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* NAV TABS */
+  .top-nav {
+    background: linear-gradient(135deg, #0f0f1a 0%, #1a0a2e 100%);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+  .header {
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .logo {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+    box-shadow: 0 0 20px var(--accent-glow);
+  }
+  .header-title { flex: 1; }
+  .header-title h1 { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .header-title p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .badge {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 3px 9px; border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .nav-tabs {
+    display: flex; overflow-x: auto;
+    padding: 0 20px;
+    gap: 0;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 10px 16px;
+    font-size: 12px; font-weight: 600;
+    color: var(--muted);
+    cursor: pointer; border: none; background: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap; transition: all 0.2s;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== PAGE: DISPOSITIVOS ===== */
+  .controls {
+    padding: 16px 20px;
+    display: flex; flex-direction: column; gap: 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .search-box { position: relative; }
+  .search-box input {
+    width: 100%;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 16px 11px 42px;
+    color: var(--text); font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-box input:focus { border-color: var(--accent); }
+  .search-box input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute; left: 13px; top: 50%;
+    transform: translateY(-50%); color: var(--muted); font-size: 15px;
+  }
+  .filter-tabs { display: flex; gap: 7px; flex-wrap: wrap; }
+  .filter-tab {
+    padding: 6px 13px; border-radius: 20px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--muted); font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .filter-tab:hover { border-color: var(--accent2); color: var(--text); }
+  .filter-tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-color: transparent; color: white;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+
+  .stats-bar {
+    display: flex; background: var(--surface);
+    border-bottom: 1px solid var(--border); overflow-x: auto;
+  }
+  .stat {
+    flex: 1; min-width: 70px; padding: 10px 12px; text-align: center;
+    border-right: 1px solid var(--border); cursor: pointer; transition: background 0.2s;
+  }
+  .stat:last-child { border-right: none; }
+  .stat:hover { background: var(--card); }
+  .stat-num { font-size: 18px; font-weight: 800; }
+  .stat-label { font-size: 9px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .stat-num.engajamento { color: var(--blue); }
+  .stat-num.venda { color: var(--green); }
+  .stat-num.consciencia { color: var(--orange); }
+  .stat-num.curiosidade { color: var(--pink); }
+  .stat-num.viral { color: var(--yellow); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px; padding: 16px 20px;
+  }
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px; cursor: pointer;
+    transition: all 0.25s; position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    border-radius: 14px 14px 0 0; opacity: 0; transition: opacity 0.2s;
+  }
+  .card:hover {
+    border-color: var(--accent); transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 20px var(--accent-glow);
+  }
+  .card:hover::before { opacity: 1; }
+  .card.type-engajamento::before { background: var(--blue); }
+  .card.type-venda::before { background: var(--green); }
+  .card.type-consciencia::before { background: var(--orange); }
+  .card.type-curiosidade::before { background: var(--pink); }
+  .card.type-viral::before { background: var(--yellow); }
+  .card.saved { border-color: var(--accent2); }
+
+  .card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .num-badge {
+    width: 30px; height: 30px; flex-shrink: 0;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 7px; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: var(--muted);
+  }
+  .card-title { font-size: 14px; font-weight: 700; line-height: 1.3; flex: 1; }
+  .save-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 17px; opacity: 0.4; transition: opacity 0.2s; padding: 2px;
+  }
+  .save-btn:hover, .save-btn.saved { opacity: 1; }
+  .tags { display: flex; gap: 5px; margin-bottom: 10px; flex-wrap: wrap; }
+  .tag {
+    font-size: 10px; font-weight: 700; padding: 2px 7px;
+    border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .tag.engajamento { background: rgba(59,130,246,0.15); color: var(--blue); }
+  .tag.venda { background: rgba(34,197,94,0.15); color: var(--green); }
+  .tag.consciencia { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .tag.curiosidade { background: rgba(236,72,153,0.15); color: var(--pink); }
+  .tag.viral { background: rgba(234,179,8,0.15); color: var(--yellow); }
+
+  .card-logic { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+  .example-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+  }
+  .example-label {
+    font-size: 10px; font-weight: 700; color: var(--accent2);
+    text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 5px;
+  }
+  .example-text { font-size: 12px; line-height: 1.5; color: var(--text); font-style: italic; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
+    align-items: center; justify-content: center; padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 20px; max-width: 580px; width: 100%;
+    max-height: 88vh; overflow-y: auto; padding: 24px;
+    position: relative;
+  }
+  .modal-close {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); border-radius: 8px;
+    width: 30px; height: 30px; cursor: pointer;
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { color: var(--text); border-color: var(--accent); }
+  .modal-num { font-size: 40px; font-weight: 900; color: var(--accent); margin-bottom: 6px; opacity: 0.5; }
+  .modal-title { font-size: 20px; font-weight: 800; margin-bottom: 10px; }
+  .modal-tags { margin-bottom: 18px; }
+  .modal-section { margin-bottom: 18px; }
+  .modal-section-title {
+    font-size: 10px; font-weight: 700; color: var(--accent2);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 7px;
+  }
+  .modal-section p { font-size: 13px; line-height: 1.7; color: #cccce0; }
+  .modal-example {
+    background: var(--surface); border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0; padding: 12px 14px;
+    font-size: 13px; line-height: 1.6; font-style: italic;
+  }
+  .modal-warn {
+    background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.3);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 12px; line-height: 1.6; color: #fdba74;
+  }
+  .modal-when {
+    background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+    border-radius: 8px; padding: 10px 14px;
+    font-size: 12px; line-height: 1.6; color: #86efac;
+  }
+  .modal-actions { margin-top: 18px; display: flex; gap: 10px; }
+
+  /* BUILDER */
+  .builder-section {
+    padding: 16px 20px; border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .builder-title {
+    font-size: 13px; font-weight: 700; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .builder-controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+  .builder-select {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 9px 11px;
+    font-size: 12px; outline: none; transition: border-color 0.2s; cursor: pointer;
+  }
+  .builder-select:focus { border-color: var(--accent); }
+  .builder-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: white; padding: 9px 16px; border-radius: 8px;
+    font-size: 12px; font-weight: 700; cursor: pointer;
+    transition: opacity 0.2s; white-space: nowrap;
+  }
+  .builder-btn:hover { opacity: 0.9; }
+  .sequence-output { margin-top: 14px; display: none; }
+  .sequence-output.visible { display: block; }
+  .seq-step {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .seq-step:last-child { border-bottom: none; }
+  .seq-num {
+    width: 26px; height: 26px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 800;
+  }
+  .seq-content { flex: 1; }
+  .seq-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; }
+  .seq-desc { font-size: 11px; color: var(--muted); line-height: 1.5; }
+
+  /* SAVED */
+  .saved-panel { padding: 16px 20px; border-top: 1px solid var(--border); }
+  .saved-title { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .saved-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+  .saved-chip {
+    background: rgba(124,58,237,0.15); border: 1px solid var(--accent);
+    color: var(--accent2); padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .saved-chip:hover { background: rgba(124,58,237,0.3); }
+  .saved-chip-remove { font-size: 13px; opacity: 0.7; }
+  .empty-state { padding: 50px 24px; text-align: center; color: var(--muted); }
+  .empty-state .emoji { font-size: 40px; margin-bottom: 10px; }
+  .empty-state p { font-size: 13px; }
+
+  /* ===== PAGE: SEQUÊNCIAS ===== */
+  .seq-page { padding: 20px; }
+  .seq-page-title {
+    font-size: 20px; font-weight: 800; margin-bottom: 6px;
+  }
+  .seq-page-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+
+  .cadencia-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .cadencia-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px;
+  }
+  .cadencia-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .cadencia-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .cadencia-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; margin-bottom: 8px; text-transform: uppercase;
+  }
+  .cadencia-badge.alta { background: rgba(239,68,68,0.15); color: #f87171; }
+  .cadencia-badge.baixa { background: rgba(34,197,94,0.15); color: var(--green); }
+
+  .tipos-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .tipo-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; transition: all 0.2s;
+  }
+  .tipo-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .tipo-icon { font-size: 24px; margin-bottom: 8px; }
+  .tipo-nome { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .tipo-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+  .tipo-devices { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tipo-device-tag {
+    font-size: 10px; padding: 2px 7px; border-radius: 4px;
+    background: rgba(124,58,237,0.15); color: var(--accent2);
+    border: 1px solid rgba(124,58,237,0.3);
+  }
+  .tipo-cadencia {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 4px; margin-bottom: 8px; display: inline-block; text-transform: uppercase;
+  }
+  .tipo-cadencia.alta { background: rgba(239,68,68,0.15); color: #f87171; }
+  .tipo-cadencia.media { background: rgba(234,179,8,0.15); color: var(--yellow); }
+  .tipo-cadencia.baixa { background: rgba(34,197,94,0.15); color: var(--green); }
+  .tipo-cadencia.variavel { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+  /* ===== PAGE: GUIA ===== */
+  .guia-page { padding: 20px; }
+  .guia-block {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 20px; margin-bottom: 16px;
+  }
+  .guia-block h2 { font-size: 16px; font-weight: 700; margin-bottom: 10px; }
+  .guia-block p, .guia-block li {
+    font-size: 13px; color: #cccce0; line-height: 1.8;
+  }
+  .guia-block ul { padding-left: 18px; }
+  .guia-block li { margin-bottom: 6px; }
+  .guia-highlight {
+    background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 10px; padding: 14px 16px; margin: 12px 0;
+    font-size: 13px; color: var(--accent2); line-height: 1.7;
+  }
+  .guia-pillar {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin: 14px 0;
+  }
+  .pillar {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; text-align: center;
+  }
+  .pillar-icon { font-size: 28px; margin-bottom: 6px; }
+  .pillar-name { font-size: 13px; font-weight: 700; }
+  .pillar-desc { font-size: 11px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .guia-steps { counter-reset: step; }
+  .guia-step {
+    display: flex; gap: 12px; margin-bottom: 14px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+  }
+  .step-num {
+    width: 28px; height: 28px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-size: 12px; font-weight: 800;
+  }
+  .step-body { flex: 1; }
+  .step-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .step-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+
+  /* ===== PAGE: IA CRIATIVA ===== */
+  .ia-page { padding: 20px; max-width: 700px; margin: 0 auto; }
+  .ia-hero {
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(168,85,247,0.08));
+    border: 1px solid rgba(124,58,237,0.3);
+    border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: center;
+  }
+  .ia-hero h2 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .ia-hero p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .ia-hero .model-badge {
+    display: inline-block; margin-top: 10px;
+    background: rgba(124,58,237,0.2); border: 1px solid rgba(124,58,237,0.4);
+    color: var(--accent2); font-size: 11px; font-weight: 700;
+    padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .ia-block {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px; margin-bottom: 14px;
+  }
+  .ia-block-title {
+    font-size: 11px; font-weight: 700; color: var(--accent2);
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .ia-label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; margin-top: 12px; }
+  .ia-label:first-of-type { margin-top: 0; }
+  .ia-input, .ia-select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 14px; color: var(--text);
+    font-size: 13px; outline: none; transition: border-color 0.2s;
+    font-family: inherit;
+  }
+  .ia-input:focus, .ia-select:focus { border-color: var(--accent); }
+  .ia-input::placeholder { color: var(--muted); }
+  .ia-select { cursor: pointer; }
+  textarea.ia-input { resize: vertical; min-height: 80px; line-height: 1.6; }
+  .ia-row { display: flex; gap: 10px; }
+  .ia-row > * { flex: 1; }
+  .ia-key-row { display: flex; gap: 8px; align-items: center; }
+  .ia-key-row .ia-input { flex: 1; font-family: monospace; font-size: 12px; }
+  .ia-key-status {
+    font-size: 11px; padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+    font-weight: 700;
+  }
+  .ia-key-status.ok { background: rgba(34,197,94,0.15); color: var(--green); }
+  .ia-key-status.none { background: rgba(136,136,170,0.15); color: var(--muted); }
+  .ia-generate-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; color: white; font-size: 14px; font-weight: 700;
+    border-radius: 12px; cursor: pointer; transition: opacity 0.2s;
+    margin-top: 4px;
+  }
+  .ia-generate-btn:hover { opacity: 0.9; }
+  .ia-generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .ia-result {
+    display: none; background: var(--card); border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 14px; padding: 20px; margin-bottom: 14px;
+  }
+  .ia-result.visible { display: block; }
+  .ia-result-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border);
+  }
+  .ia-result-title { font-size: 15px; font-weight: 800; }
+  .ia-copy-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--muted); padding: 6px 12px; border-radius: 8px;
+    font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .ia-copy-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .ia-story-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px; margin-bottom: 10px;
+  }
+  .ia-story-card:last-child { margin-bottom: 0; }
+  .ia-story-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .ia-story-num {
+    width: 28px; height: 28px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+  }
+  .ia-story-device { font-size: 12px; font-weight: 700; color: var(--accent2); }
+  .ia-story-role { font-size: 11px; color: var(--muted); margin-left: auto; }
+  .ia-story-script {
+    font-size: 13px; line-height: 1.7; color: var(--text);
+    background: rgba(124,58,237,0.05); border-radius: 8px; padding: 10px 12px;
+    border-left: 3px solid var(--accent);
+  }
+  .ia-story-tip {
+    font-size: 11px; color: var(--muted); margin-top: 7px; padding: 6px 10px;
+    background: rgba(136,136,170,0.08); border-radius: 6px;
+    display: flex; align-items: flex-start; gap: 5px;
+  }
+  .ia-loading {
+    display: none; text-align: center; padding: 30px;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; margin-bottom: 14px;
+  }
+  .ia-loading.visible { display: block; }
+  .ia-spinner {
+    width: 36px; height: 36px; border: 3px solid var(--border);
+    border-top-color: var(--accent2); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .ia-loading p { font-size: 13px; color: var(--muted); }
+  .ia-error {
+    display: none; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 12px; padding: 14px; margin-bottom: 14px;
+    font-size: 13px; color: #fca5a5; line-height: 1.6;
+  }
+  .ia-error.visible { display: block; }
+  .ia-history-item {
+    padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer;
+    transition: color 0.2s;
+  }
+  .ia-history-item:hover { color: var(--accent2); }
+  .ia-history-item:last-child { border-bottom: none; }
+  .ia-history-title { font-size: 12px; font-weight: 600; }
+  .ia-history-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: 1fr; padding: 10px; }
+    .controls { padding: 12px; }
+    .cadencia-row { grid-template-columns: 1fr; }
+    .guia-pillar { grid-template-columns: 1fr; }
+    .tipos-grid { grid-template-columns: 1fr; }
+    .header { padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER + NAVEGAÇÃO -->
+<div class="top-nav">
+  <div class="header">
+    <div class="logo">⚡</div>
+    <div class="header-title">
+      <h1>StoryLabKit</h1>
+      <p>Método Leandro Ladeira</p>
+    </div>
+    <div class="badge">38 Dispositivos</div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('dispositivos', this)">📱 Dispositivos</button>
+    <button class="nav-tab" onclick="showPage('sequencias', this)">🎯 Sequências</button>
+    <button class="nav-tab" onclick="showPage('gerador', this)">⚡ Gerador</button>
+    <button class="nav-tab" onclick="showPage('guia', this)">📖 Guia do Método</button>
+    <button class="nav-tab" onclick="showPage('ia', this)">🤖 IA Criativa</button>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE: DISPOSITIVOS                                          -->
+<!-- ============================================================ -->
+<div id="page-dispositivos" class="page active">
+  <div class="controls">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar dispositivo..." oninput="filterCards()">
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="setFilter('todos', this)">Todos</button>
+      <button class="filter-tab" onclick="setFilter('engajamento', this)">📊 Engajamento</button>
+      <button class="filter-tab" onclick="setFilter('venda', this)">💰 Venda</button>
+      <button class="filter-tab" onclick="setFilter('consciencia', this)">🎯 Consciência</button>
+      <button class="filter-tab" onclick="setFilter('curiosidade', this)">🔮 Curiosidade</button>
+      <button class="filter-tab" onclick="setFilter('viral', this)">🚀 Viral</button>
+      <button class="filter-tab" onclick="setFilter('salvos', this)">❤️ Salvos</button>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat" onclick="setFilter('engajamento', null)">
+      <div class="stat-num engajamento" id="cnt-engajamento">0</div>
+      <div class="stat-label">Engajamento</div>
+    </div>
+    <div class="stat" onclick="setFilter('venda', null)">
+      <div class="stat-num venda" id="cnt-venda">0</div>
+      <div class="stat-label">Venda</div>
+    </div>
+    <div class="stat" onclick="setFilter('consciencia', null)">
+      <div class="stat-num consciencia" id="cnt-consciencia">0</div>
+      <div class="stat-label">Consciência</div>
+    </div>
+    <div class="stat" onclick="setFilter('curiosidade', null)">
+      <div class="stat-num curiosidade" id="cnt-curiosidade">0</div>
+      <div class="stat-label">Curiosidade</div>
+    </div>
+    <div class="stat" onclick="setFilter('viral', null)">
+      <div class="stat-num viral" id="cnt-viral">0</div>
+      <div class="stat-label">Viral</div>
+    </div>
+  </div>
+
+  <div class="saved-panel" id="savedPanel" style="display:none">
+    <div class="saved-title">❤️ Dispositivos Salvos</div>
+    <div class="saved-chips" id="savedChips"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  <div class="empty-state" id="emptyState" style="display:none">
+    <div class="emoji">🔍</div>
+    <p>Nenhum dispositivo encontrado.<br>Tente outro filtro ou busca.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE: SEQUÊNCIAS (11 tipos do método)                       -->
+<!-- ============================================================ -->
+<div id="page-sequencias" class="page">
+  <div class="seq-page">
+    <div class="seq-page-title">🎯 Tipos de Sequência</div>
+    <div class="seq-page-sub">
+      A sequência é a estrutura fundamental do StoryLabKit — ela é para o Instagram o que a campanha é para o tráfego pago.
+      Cada tipo tem um objetivo diferente, uma cadência diferente e dispositivos específicos que funcionam melhor nela.
+    </div>
+
+    <div class="cadencia-row">
+      <div class="cadencia-card">
+        <span class="cadencia-badge alta">Cadência Alta</span>
+        <div class="cadencia-title">🔥 Muitos stories no dia</div>
+        <div class="cadencia-desc">30–50+ stories. Usada para venda de produto digital, picos de lançamento e aquecimento. Quanto mais você quer vender, mais você precisa trabalhar.</div>
+      </div>
+      <div class="cadencia-card">
+        <span class="cadencia-badge baixa">Cadência Baixa</span>
+        <div class="cadencia-title">🌊 Poucos stories no dia</div>
+        <div class="cadencia-desc">6–15 stories. Usada para produto físico, engajamento e consciência. Eficiente, direto ao ponto. Demonstração + prova social.</div>
+      </div>
+    </div>
+
+    <div class="tipos-grid" id="tiposGrid"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE: GERADOR                                               -->
+<!-- ============================================================ -->
+<div id="page-gerador" class="page">
+  <div class="builder-section" style="border-top:none; padding-top:20px;">
+    <div class="builder-title" style="font-size:16px;">⚡ Gerador de Sequência</div>
+    <p style="font-size:12px; color:var(--muted); margin-bottom:16px; line-height:1.6;">
+      Escolha o objetivo da sequência e a quantidade de stories. O gerador monta uma sequência com os dispositivos ideais para cada fase: abertura, desenvolvimento e fechamento.
+    </p>
+    <div class="builder-controls">
+      <select class="builder-select" id="seqObjetivo">
+        <option value="venda_digital">💰 Venda de Produto Digital</option>
+        <option value="venda_fisico">📦 Venda de Produto Físico</option>
+        <option value="engajamento">📊 Engajamento Puro</option>
+        <option value="consciencia">🎯 Consciência de Produto</option>
+        <option value="curiosidade">🔮 Despertar Curiosidade</option>
+        <option value="viral">🚀 Viralizar</option>
+        <option value="aquecimento">🔥 Aquecimento para Pico de Vendas</option>
+        <option value="abertura">🚪 Abertura de Carrinho</option>
+        <option value="caixinha">📬 Caixinha de Perguntas</option>
+      </select>
+      <select class="builder-select" id="seqQtd">
+        <option value="3">3 stories</option>
+        <option value="5" selected>5 stories</option>
+        <option value="7">7 stories</option>
+      </select>
+      <button class="builder-btn" onclick="generateSequence()">✨ Gerar Sequência</button>
+    </div>
+    <div class="sequence-output" id="seqOutput"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--  PAGE: GUIA                                                  -->
+<!-- ============================================================ -->
+<div id="page-guia" class="page">
+  <div class="guia-page">
+
+    <div class="guia-block">
+      <h2>📖 O Método StoryLabKit</h2>
+      <p>StoryLabKit é a estratégia mais eficiente de comunicação e venda no Instagram segundo Leandro Ladeira — criador do método. A base é usar <strong>sequências</strong> de stories com <strong>dispositivos de engenharia social</strong> para guiar o público por uma jornada que termina em venda ou conexão profunda.</p>
+      <div class="guia-highlight">
+        💡 <strong>Analogia com tráfego pago:</strong> a sequência = campanha, a série de stories = conjunto de anúncios, cada story = anúncio, e o dispositivo = a copy/criativo dentro do story.
+      </div>
+    </div>
+
+    <div class="guia-block">
+      <h2>🏛️ Os 3 Pilares do Método</h2>
+      <div class="guia-pillar">
+        <div class="pillar">
+          <div class="pillar-icon">🧲</div>
+          <div class="pillar-name">Atenção</div>
+          <div class="pillar-desc">Capturar e prender o olhar — começo que para o scroll</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">🤝</div>
+          <div class="pillar-name">Conexão</div>
+          <div class="pillar-desc">Criar relacionamento, identidade e confiança com a audiência</div>
+        </div>
+        <div class="pillar">
+          <div class="pillar-icon">💰</div>
+          <div class="pillar-name">Venda</div>
+          <div class="pillar-desc">Converter atenção e conexão em desejo e ação de compra</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guia-block">
+      <h2>⚙️ Como Usar o App na Prática</h2>
+      <div class="guia-steps">
+        <div class="guia-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Defina o objetivo da sequência</div>
+            <div class="step-desc">Antes de postar qualquer story, decida: o que você quer que aconteça no final? Venda, engajamento, consciência? Isso define tudo — cadência, dispositivos, tom.</div>
+          </div>
+        </div>
+        <div class="guia-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Use o Gerador de Sequência</div>
+            <div class="step-desc">Vá na aba "⚡ Gerador", escolha o objetivo e a quantidade de stories. O app sugere uma sequência com os dispositivos ideais e a lógica de cada step.</div>
+          </div>
+        </div>
+        <div class="guia-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Estude os dispositivos do dia</div>
+            <div class="step-desc">Clique em cada dispositivo da sequência para ver a lógica completa, o exemplo e quando usar. Adapte para o seu nicho e produto.</div>
+          </div>
+        </div>
+        <div class="guia-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Execute imediatamente</div>
+            <div class="step-desc">Aprenda e aplique. O erro mais comum é estudar sem executar. Crie a sequência no mesmo dia que aprender o dispositivo — a memória muscular é o que gera resultado.</div>
+          </div>
+        </div>
+        <div class="guia-step">
+          <div class="step-num">5</div>
+          <div class="step-body">
+            <div class="step-title">Itere sobre os temas</div>
+            <div class="step-desc">O mesmo produto pode ser vendido com 10 temas diferentes. Medo de não vender, ideias de produto, histórias de clientes — cada tema é uma nova sequência para o mesmo objetivo.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="guia-block">
+      <h2>🧠 Conceitos-Chave</h2>
+      <ul>
+        <li><strong>Frequência:</strong> quantas vezes por semana você posta stories. Deve ser todos os dias.</li>
+        <li><strong>Cadência:</strong> intensidade de stories naquele dia específico. Alta para vender, baixa para engajar/manter.</li>
+        <li><strong>Tema:</strong> o contexto ou assunto central da sequência. Um produto pode ter dezenas de temas.</li>
+        <li><strong>Fruto maduro vs verde:</strong> o Dispositivo 38 (Levante a Mão) separa quem está pronto para comprar (maduro) de quem ainda precisa de mais aquecimento (verde).</li>
+        <li><strong>Dispositivo:</strong> cada técnica de engenharia social que você aplica em um story específico. Pode misturar até 2 dispositivos por story.</li>
+        <li><strong>Sequência vencedora:</strong> quando uma sequência performa bem, documente e replique com pequenas variações de tema.</li>
+      </ul>
+    </div>
+
+    <div class="guia-block">
+      <h2>⚠️ Os Erros Mais Comuns</h2>
+      <ul>
+        <li>Usar a mesma sequência de venda todo dia sem variar o tema — a audiência "cansa" da abordagem</li>
+        <li>Cadência baixa em dias de venda — se quer vender, precisa trabalhar mais nos stories naquele dia</li>
+        <li>Pular para o link de vendas sem construir contexto e desejo antes</li>
+        <li>Não documentar sequências que funcionaram para replicar depois</li>
+        <li>Estudar os dispositivos mas nunca aplicar — o método só funciona na prática</li>
+        <li>Vender múltiplos produtos na mesma sequência — foca em um objetivo por sequência</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODAL DOS DISPOSITIVOS -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="closeModalBtn()">✕</button>
+    <div class="modal-num" id="modal-num"></div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-tags" id="modal-tags"></div>
+    <div class="modal-section">
+      <div class="modal-section-title">🧠 Lógica do Dispositivo</div>
+      <p id="modal-logic"></p>
+    </div>
+    <div class="modal-section" id="modal-when-section">
+      <div class="modal-section-title">✅ Quando Usar</div>
+      <div class="modal-when" id="modal-when"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">💡 Exemplo de Execução</div>
+      <div class="modal-example" id="modal-example"></div>
+    </div>
+    <div class="modal-section" id="modal-warn-section">
+      <div class="modal-section-title">⚠️ Erro Comum</div>
+      <div class="modal-warn" id="modal-warn"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="builder-btn" id="modal-save-btn" onclick="toggleSaveFromModal()" style="flex:1">❤️ Salvar</button>
+      <button class="builder-btn" onclick="closeModalBtn()" style="background: var(--surface); border: 1px solid var(--border); flex:0.5">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  DADOS
+// ============================================================
+const DISPOSITIVOS = [
+  {
+    id: 1, nome: "COMBUSTÍVEL EXTRA",
+    tipos: ["engajamento", "viral"],
+    logica: "Trazer audiência de outro lugar para os stories: evento, live, e-mail, Telegram, WhatsApp. Assim você injeta nova audiência qualificada que já tem interesse no que você faz — pessoas que ainda não te seguem no Instagram mas já estão quentes.",
+    quando: "Use no começo de sequências de venda ou em dias de abertura de carrinho. Excelente para trazer inscritos de uma lista de e-mail ou membros de grupo para os stories.",
+    exemplo: "\"Hoje eu vou dar uma aula ao vivo nos stories sobre [tema]. Chama alguém do grupo que tá travado nisso.\"",
+    erro: "Usar só para engajamento quando deveria usar em momentos de alta intenção de venda. O combustível extra é mais poderoso quando direcionado a um objetivo claro."
+  },
+  {
+    id: 2, nome: "DESAFIO CURTO COM PROMESSA DE ANÁLISE",
+    tipos: ["engajamento", "venda"],
+    logica: "Propor um desafio para a audiência prometendo uma análise. Incentiva a interação por inbox e cria uma necessidade das pessoas ficarem atentas ao seu perfil ao longo do dia. Funciona muito para posicionamento de especialista.",
+    quando: "Use em sequências de consciência, engajamento puro e aquecimento. É um dispositivo de relacionamento — não use direto no pico de vendas.",
+    exemplo: "\"Me envia por inbox sua página de vendas que eu vou fazer uma análise gratuita. Aceito só as primeiras 5.\"",
+    erro: "Prometer mais do que pode entregar. Se abrir para todos, vai se sobrecarregar. Limite o número de análises ou defina critérios."
+  },
+  {
+    id: 3, nome: "CONVERSA SEM PRIVACIDADE",
+    tipos: ["engajamento", "consciencia"],
+    logica: "Responder à conversa do inbox nos stories. Mostrar um trecho de uma conversa do inbox é uma das melhores maneiras de incentivar que mais pessoas venham falar com você — cria prova social de que você responde e gera identificação.",
+    quando: "Excelente para qualquer tipo de sequência. Especialmente poderoso em sequências de venda pois mostra objeções reais sendo quebradas e dúvidas respondidas.",
+    exemplo: "Tirar print de uma conversa do inbox com uma pergunta comum da sua audiência e responder publicamente nos stories com seu ponto de vista.",
+    erro: "Mostrar conversas sem a permissão da pessoa ou expor dados pessoais. Sempre esconda o nome/foto do usuário se a conversa for sensível."
+  },
+  {
+    id: 4, nome: "DIA DO HOTSEAT",
+    tipos: ["engajamento", "consciencia"],
+    logica: "Pedir para a audiência contribuir com conteúdo para ser analisado ao vivo. Fazendo isso você terceiriza a geração de conteúdo para a audiência e ainda incentiva a interação e contribuição. Cria conexão real.",
+    quando: "Sequências de engajamento e consciência. Ótimo para educar a audiência enquanto eles participam ativamente.",
+    exemplo: "\"Hoje é dia de Hotseat. Me manda a primeira frase do seu anúncio e eu vou comentar ao vivo nos próximos stories.\"",
+    erro: "Escolher contribuições muito fracas para analisar — isso desengaja. Escolha algo que gere aprendizado real para toda a audiência que assiste."
+  },
+  {
+    id: 5, nome: "META COLETIVA",
+    tipos: ["engajamento", "viral"],
+    logica: "Estipular uma meta coletiva para entregar algum benefício. Essa é uma maneira de aumentar muito as interações e engajamento, pois todos querem ajudar a bater a meta. Cria senso de comunidade e urgência colaborativa.",
+    quando: "Use para turbinar alcance e engajamento de posts importantes. Coloque uma meta realista mas que exija esforço — nem muito fácil nem impossível.",
+    exemplo: "\"Se esse story bater 500 compartilhamentos até as 23h eu revelo o método completo que usei para [resultado específico].\"",
+    erro: "Definir uma meta que você não vai cumprir se atingida, ou uma meta impossível que frustra a audiência. A credibilidade está em jogo."
+  },
+  {
+    id: 6, nome: "HISTÓRIA COM GANCHO",
+    tipos: ["consciencia", "curiosidade"],
+    logica: "Contar uma história que gere contexto para uma ação que você quer que o público realize. Deixa a audiência interessada em consumir os conteúdos da sequência e mais instigada a realizar a ação final. Histórias criam empatia e reduzem resistência.",
+    quando: "Use no começo de sequências de venda — é o aquecimento emocional. Também funciona sozinho em sequências de engajamento puro.",
+    exemplo: "\"Hoje eu vou contar a história do dia que eu quase perdi tudo. E o que aprendi muda tudo sobre [tema].\"",
+    erro: "Contar uma história sem nenhuma conexão com o produto ou objetivo da sequência. A história deve criar contexto para o que vem depois."
+  },
+  {
+    id: 7, nome: "CULTURA DE RESULTADO",
+    tipos: ["venda", "consciencia"],
+    logica: "Incentivar a audiência a mostrar os resultados que tem. Cria a associação de que seu produto é eficiente em gerar resultados, além de conseguir provas sociais poderosas de forma completamente orgânica e espontânea.",
+    quando: "Essencial em sequências de venda. Use nos stories intermediários, antes do CTA final. Quanto mais resultados reais você mostrar, menor a resistência à compra.",
+    exemplo: "\"Quem está aplicando o [método] e teve resultado esta semana me manda aqui. Vou repostar os melhores.\"",
+    erro: "Mostrar resultados atípicos sem contexto. Sempre contextualize o resultado — quanto tempo levou, o que a pessoa fez para chegar lá."
+  },
+  {
+    id: 8, nome: "PIADA INTERNA",
+    tipos: ["engajamento", "viral"],
+    logica: "Criar uma piada interna através da repetição. Sua audiência se sente inteligente por reconhecer a piada e incluída no grupo, aumentando a conexão e o sentido de comunidade. Cria uma linguagem exclusiva entre você e seus seguidores.",
+    quando: "Use em sequências de engajamento e para criar identidade de comunidade. É um dispositivo de longo prazo — a piada precisa ser repetida para se tornar interna.",
+    exemplo: "Uma referência, bordão ou situação recorrente que só quem acompanha seus stories vai entender. Funciona como sinal de pertencimento.",
+    erro: "Forçar uma piada que não surgiu naturalmente. Piadas internas emergem do relacionamento real — não dá para criar artificialmente do zero."
+  },
+  {
+    id: 9, nome: "PÂNICO PELO CONTEÚDO",
+    tipos: ["curiosidade", "engajamento"],
+    logica: "Gerar uma forte antecipação pelo seu conteúdo através da curiosidade. Faz a audiência consumir o conteúdo com muito mais atenção e presença — eles estão esperando por aquele momento específico.",
+    quando: "Use para abrir sequências ou para aumentar visualizações de um story específico que você quer que mais pessoas assistam. Excelente antes de uma demonstração de produto.",
+    exemplo: "\"Daqui a 2 horas eu vou revelar o dispositivo que mais me traz vendas. Ativa a notificação e não some.\"",
+    erro: "Prometer algo extraordinário e entregar algo comum. O pânico cria expectativa alta — você precisa entregar à altura ou perde credibilidade."
+  },
+  {
+    id: 10, nome: "ANSIEDADE PELA ABERTURA",
+    tipos: ["engajamento", "venda"],
+    logica: "Incentivar a audiência a mandar um comprovante de que realizaram uma ação. Quem ainda não realizou percebe que está ficando de fora e a tendência é que realize também — FOMO (medo de perder) em ação.",
+    quando: "Use nos dias que antecedem abertura de carrinho ou eventos. Cria urgência orgânica sem pressão direta.",
+    exemplo: "\"Se você já comprou o ingresso me manda aqui para eu saber quem vai. Já tem muita gente confirmada.\"",
+    erro: "Usar fora de contexto de evento ou abertura de carrinho. O dispositivo funciona quando há algo real acontecendo — não funciona no vazio."
+  },
+  {
+    id: 11, nome: "ABERTURA DE CARRINHO",
+    tipos: ["venda"],
+    logica: "Gerar antecipação pela abertura de carrinho. Aumenta o público consciente do horário e dia da abertura, e eleva muito a quantidade de pessoas que vai ver a página de vendas. É o dispositivo de CTA mais direto do método.",
+    quando: "Use no pico de vendas — no dia e nas horas que antecedem a abertura. Pode ser combinado com o Dispositivo 12 (Ativa a Notificação) para maximizar o alcance.",
+    exemplo: "\"Amanhã às 9h abro as vendas para [produto]. Quem entrar nas primeiras 2 horas ganha [bônus]. Coloca o alarme agora.\"",
+    erro: "Abrir carrinho sem ter feito aquecimento adequado antes. A abertura de carrinho é o último passo — não o primeiro. Precisa de dias de preparação."
+  },
+  {
+    id: 12, nome: "ATIVE A NOTIFICAÇÃO",
+    tipos: ["curiosidade", "engajamento"],
+    logica: "Gerar expectativa por um conteúdo que você fará. É uma maneira de aumentar muito as visualizações no dia em que for realizar seus stories — você pré-aquece a audiência para consumir o conteúdo.",
+    quando: "Use um ou dois dias antes de uma sequência importante: venda, evento, caixinha temática. Quanto maior o evento, mais dias antes você pode usar esse dispositivo.",
+    exemplo: "\"Amanhã eu vou falar sobre [tema poderoso] que nunca falei antes. Vai a notificação do perfil para não perder.\"",
+    erro: "Pedir para ativar a notificação sem dizer o que vai acontecer. A antecipação precisa de conteúdo — 'ativa a notificação' sozinho não funciona."
+  },
+  {
+    id: 13, nome: "ALERTA PARA VOLTAR",
+    tipos: ["engajamento"],
+    logica: "Fazer um convite para o público rever os stories. O algoritmo entende que o conteúdo tem valor quando as pessoas voltam, aumentando o engajamento. Você também coleta dados sobre o que mais funciona com sua audiência.",
+    quando: "Use no final de sequências com muito conteúdo, ou no meio de sequências longas para reduzir o abandono. Funciona bem com dispositivos educacionais.",
+    exemplo: "\"Volta nos stories e me manda um emoji no que mais fez sentido para você. Vou responder todos por aqui.\"",
+    erro: "Usar em sequências curtas ou de pouco valor — parece forçado. Só faz sentido quando você realmente entregou conteúdo que vale rever."
+  },
+  {
+    id: 14, nome: "BI APURADO",
+    tipos: ["consciencia", "venda"],
+    logica: "Realizar uma pesquisa com a audiência. É uma maneira de receber informações valiosas a respeito do público que podem ser usadas para vender, criar ou melhorar o produto. Também aumenta o engajamento e faz o público se sentir ouvido.",
+    quando: "Use em sequências de consciência e no pré-aquecimento de vendas. Os dados coletados alimentam os próximos dispositivos — especialmente o 7, 20 e 35.",
+    exemplo: "\"Me conta: qual é a sua maior dificuldade com [tema]? Vou usar as respostas para criar conteúdo.\"",
+    erro: "Fazer a pesquisa e nunca usar os dados — a audiência percebe quando perguntam e nada muda. Use as respostas para personalizar o conteúdo seguinte."
+  },
+  {
+    id: 15, nome: "PRINT VALIOSO",
+    tipos: ["engajamento", "viral"],
+    logica: "Incentivar a audiência a tirar print. Quando alguém tira print dos stories, isso conta muito para o algoritmo do Instagram — entrega e engajamento aumentam muito. Além disso, seu conteúdo fica salvo no celular da pessoa.",
+    quando: "Use em qualquer tipo de sequência quando você tiver um conteúdo realmente denso: lista, framework, checklist, dados, comparativo. O conteúdo precisa valer um print.",
+    exemplo: "\"Aproveita e tira print desse framework. Pode precisar dele mais tarde — eu usei isso para [resultado concreto].\"",
+    erro: "Pedir print de um conteúdo vazio ou óbvio. Se o conteúdo não for genuinamente valioso, ninguém vai tirar print e você perde credibilidade."
+  },
+  {
+    id: 16, nome: "IDENTIDADE DO COMUNICADOR",
+    tipos: ["consciencia", "viral"],
+    logica: "Demonstrar e exagerar suas características naturais. É uma das melhores maneiras de manter sua personalidade na mente das pessoas — elas lembram mais de você do que do conteúdo em si. Sua forma única de se comunicar é o maior diferencial.",
+    quando: "Use em qualquer sequência, especialmente no começo. Quanto mais você aparecer como você mesmo, mais forte é a conexão. Especialmente importante em sequências de engajamento.",
+    exemplo: "Exagerar um bordão, uma forma de falar, um gesto, uma postura que é sua marca registrada. Seja reconhecivelmente você.",
+    erro: "Tentar imitar outro comunicador. Exagere seus traços naturais — não construa uma persona falsa. A autenticidade é o que gera conexão real."
+  },
+  {
+    id: 17, nome: "IDENTIDADE DO PRODUTO",
+    tipos: ["venda", "consciencia"],
+    logica: "Demonstrar a identidade do seu produto — o que o torna único, o que os clientes chamam quando se referem a ele, os termos exclusivos. Deixa a identidade do produto na mente das pessoas, aumentando as chances de venda ao criar diferenciação clara.",
+    quando: "Use em sequências de consciência e venda. Repita o nome, os termos exclusivos e a identidade do produto com frequência — repetição é o que cria memória.",
+    exemplo: "Mostrar respostas em que as pessoas usam o nome do produto espontaneamente, ou termos que surgem da comunidade ao redor do produto.",
+    erro: "Mudar o posicionamento ou os termos do produto com muita frequência. Consistência de identidade é o que cria marca registrada na mente da audiência."
+  },
+  {
+    id: 18, nome: "IDENTIDADE DO CONSUMIDOR",
+    tipos: ["consciencia", "viral"],
+    logica: "Dar voz para o consumidor ideal e exaltá-lo. Cria na comunidade a percepção do cliente ideal e incentiva um comportamento positivo nos seguidores — eles querem ser reconhecidos como parte daquele grupo.",
+    quando: "Use em sequências de consciência e engajamento. Excelente para comunidades ativas e produtos com identidade forte.",
+    exemplo: "\"Todo aluno do [produto] que eu conheço tem uma coisa em comum: não reclamam, executam. Isso define quem faz parte daqui.\"",
+    erro: "Criar uma identidade de consumidor exclusivista demais que afasta potenciais compradores. O objetivo é aspiracional, não elitista."
+  },
+  {
+    id: 19, nome: "DESABAFO",
+    tipos: ["engajamento"],
+    logica: "Estimular o público a desabafar. Toda comunidade tem algo entalado na garganta — ao estimular esse diálogo, a interação e a conexão com a audiência aumentam muito. Você se posiciona como um espaço seguro para falar.",
+    quando: "Use em sequências de engajamento puro. Funciona especialmente bem quando você abre o espaço após compartilhar sua própria vulnerabilidade.",
+    exemplo: "\"Você já teve uma experiência ruim com [tema do seu nicho]? Me conta aqui, quero entender o que está acontecendo.\"",
+    erro: "Abrir espaço para desabafo e depois não responder. Isso quebra a confiança. Se vai usar esse dispositivo, precisa estar disponível para as respostas."
+  },
+  {
+    id: 20, nome: "OPINIÃO DE QUEM COMPROU",
+    tipos: ["venda", "consciencia"],
+    logica: "Pedir a opinião de quem comprou — uma pergunta específica sobre uma aula, módulo ou resultado. Consegue informações valiosas sobre a qualidade do produto e gera depoimentos autênticos de forma natural e espontânea.",
+    quando: "Essencial em sequências de venda. Coloque logo antes do CTA final para maximizar a prova social no momento de decisão.",
+    exemplo: "\"Se você comprou o [produto], me fala: qual foi o insight da aula [X] que mais te impactou?\"",
+    erro: "Pedir opinião genérica — 'o que acharam do curso?'. Seja específico: pergunte sobre uma aula, um resultado, um momento marcante. Especificidade gera depoimentos mais poderosos."
+  },
+  {
+    id: 21, nome: "PEÇA COMPARTILHAMENTO",
+    tipos: ["viral", "engajamento"],
+    logica: "Incentivar o público a compartilhar o conteúdo — mas de forma contextualizada, não vazia. Aumenta a base de seguidores, trazendo pessoas novas para conhecer e potencialmente comprar o produto.",
+    quando: "Use após entregar conteúdo genuinamente valioso. Nunca peça compartilhamento de um story vazio — só funciona quando o conteúdo realmente merece ser compartilhado.",
+    exemplo: "\"Se você achou esse conteúdo bom e quer ver esse Instagram maior, compartilha com um amigo que precisa disso agora.\"",
+    erro: "Pedir compartilhamento como primeiro CTA da sequência. Construa valor antes de pedir. Compartilhamento é uma concessão — a audiência só faz quando o conteúdo merece."
+  },
+  {
+    id: 22, nome: "NOMES ESQUISITOS",
+    tipos: ["curiosidade", "viral"],
+    logica: "Utilizar nomes próprios e incomuns para técnicas, estratégias ou conceitos. Sai do conteúdo 'mais do mesmo' e faz o público se envolver e criar uma identificação muito maior com a mensagem. O nome esquisito é memorável.",
+    quando: "Use em qualquer sequência quando for apresentar uma técnica ou método. O nome esquisito é o que faz o conteúdo ser diferente dos outros mil tutoriais do seu nicho.",
+    exemplo: "\"Use a Técnica do Mortal Carpado para escrever a primeira frase do seu anúncio — essa é a parte que ninguém te conta.\"",
+    erro: "Usar nomes esquisitos sem ensinar o conteúdo por trás. O nome atrai, mas o conteúdo retém. Os dois precisam ser bons."
+  },
+  {
+    id: 23, nome: "ESPETACULARIZAÇÃO",
+    tipos: ["curiosidade", "consciencia"],
+    logica: "Exaltar determinada ação ou acontecimento do seu dia de uma maneira especial — dramática, épica ou cinematográfica. Aumenta a retenção do público e traz valor para a ação que está sendo feita. Faz o ordinário parecer extraordinário.",
+    quando: "Use para elevar o status de uma decisão, conquista ou bastidor que você quer compartilhar. Funciona em qualquer tipo de sequência.",
+    exemplo: "\"Hoje eu tomei a decisão mais importante do ano para o meu negócio. Me acompanha nos próximos stories que vou contar tudo.\"",
+    erro: "Espetacularizar coisas irrelevantes ou banais repetidamente — a audiência perde a crença de que é algo especial. Use com parcimônia para manter o impacto."
+  },
+  {
+    id: 24, nome: "VOCÊ SABIA",
+    tipos: ["curiosidade", "viral"],
+    logica: "Gerar curiosidade com um fato interessante, contra-intuitivo ou surpreendente sobre o seu nicho. Trazer um fato inesperado é uma das melhores maneiras de gerar curiosidade e interesse pelo conteúdo — quebra o piloto automático da audiência.",
+    quando: "Use para abrir sequências ou como stories isolados de aquecimento. Funciona muito bem para atrair pessoas que ainda não estão convencidas do seu conteúdo.",
+    exemplo: "\"Você sabia que 90% das pessoas que tentam [ação do seu nicho] desistem na primeira semana — mas não por falta de vontade?\"",
+    erro: "Usar um fato impreciso ou inventado. Se a audiência descobrir que o fato é falso, perde toda a credibilidade construída."
+  },
+  {
+    id: 25, nome: "MICRO INFLUÊNCIA",
+    tipos: ["consciencia", "viral"],
+    logica: "Recomendar algo para a audiência — livro, filme, ferramenta, hábito. Recomendar é uma das melhores maneiras de exercer influência e fazer as pessoas lembrarem de você. Você se posiciona como curador de qualidade.",
+    quando: "Use em qualquer sequência, especialmente em dias de engajamento ou consciência. Recomendações constroem autoridade indireta.",
+    exemplo: "\"Qualquer pessoa que quer [resultado] deveria ler [livro]. Mudou completamente minha forma de [área].\"",
+    erro: "Recomendar algo que você não usou ou não acredita genuinamente. A recomendação falsa é percebida pela audiência — destrói a confiança construída."
+  },
+  {
+    id: 26, nome: "PRESENTE DIFÍCIL",
+    tipos: ["engajamento", "venda"],
+    logica: "Oferecer um presente para quem engaja de uma forma específica — mas o presente tem um critério claro para ser ganho. Incentiva qualquer ação que você queira que a audiência faça, criando um gatilho de reciprocidade e esforço.",
+    quando: "Use para incentivar ações específicas: compartilhamento, resposta a uma pesquisa, envio de inbox. O critério precisa ser claro e o presente precisa ser valioso.",
+    exemplo: "\"Quem fizer [ação específica] até as [horário] ganha acesso antecipado ao [bônus/material]. Mas só quem cumprir.\"",
+    erro: "Dar o presente para todo mundo sem o critério — perde o valor do dispositivo. O 'difícil' é o que cria percepção de valor."
+  },
+  {
+    id: 27, nome: "ELEMENTO ESCONDIDO",
+    tipos: ["curiosidade", "engajamento"],
+    logica: "Falar que tem uma resposta, palavra ou elemento escondido na sequência. Quando o público descobre, volta atrás para procurar — isso aumenta muito o engajamento e o tempo de retenção na sequência.",
+    quando: "Use no meio ou final de sequências longas para fazer a audiência revisitar os stories anteriores. Aumenta o tempo de consumo do conteúdo.",
+    exemplo: "\"Você percebeu a palavra que ficou escondida nos últimos stories? Quem encontrar me manda inbox.\"",
+    erro: "Esconder algo muito difícil de encontrar que frustra, ou muito óbvio que decepciona. O elemento escondido precisa gerar satisfação quando encontrado."
+  },
+  {
+    id: 28, nome: "TARJA DE CURIOSIDADE",
+    tipos: ["curiosidade"],
+    logica: "Esconder a parte mais importante de uma mensagem com uma tarja ou símbolo. Deixa a audiência sedenta por saber o conteúdo oculto — engajamento e interação explodem porque o mistério é neurologicamente irresistível.",
+    quando: "Use para criar picos de curiosidade em qualquer sequência. Excelente para apresentar resultados, nomes de produtos ou técnicas que você vai revelar depois.",
+    exemplo: "\"Leandro, eu fiz 50 mil reais utilizando o @#$%* em 30 dias. Me manda inbox que eu te conto o que é.\"",
+    erro: "Usar a tarja em algo que não é genuinamente valioso para a audiência. A curiosidade criada precisa ser recompensada — a revelação precisa valer a espera."
+  },
+  {
+    id: 29, nome: "PSICOLOGIA REVERSA",
+    tipos: ["curiosidade", "venda"],
+    logica: "Dar uma resposta contraintuitiva — o contrário do que a audiência esperaria. Quebra completamente a expectativa da audiência e, no fim, ainda cria uma oportunidade de venda natural e sem pressão. Você se posiciona como honesto.",
+    quando: "Use em sequências de venda como quebra de padrão antes do CTA. Funciona muito bem quando a audiência está um pouco resistente.",
+    exemplo: "\"Leandro, estou doido para comprar seu curso, acha que vale? R: Não compra ainda — me conta primeiro onde você está.\"",
+    erro: "Usar a psicologia reversa de forma mecânica sem genuinamente se importar com a resposta. Se você diz 'não compra' e logo manda o link, a audiência percebe o truque."
+  },
+  {
+    id: 30, nome: "RESUMO",
+    tipos: ["engajamento", "consciencia"],
+    logica: "Pedir um resumo do conteúdo — o melhor resumo ganha algo. Incentiva o público a consumir de forma muito mais presente e ativa, e ainda gera material orgânico criado pela própria audiência. Aprende o que mais impactou.",
+    quando: "Use no final de sequências de alto conteúdo: lives, aulas, webinários. Excelente para medir o engajamento real e descobrir o que mais ressoou.",
+    exemplo: "\"O melhor resumo dessa live ganha [prêmio]. Manda por inbox — estou esperando.\"",
+    erro: "Usar em sequências curtas ou de pouco conteúdo — não faz sentido pedir resumo de 3 stories. Reserve para momentos de entrega densa."
+  },
+  {
+    id: 31, nome: "7 ERROS",
+    tipos: ["engajamento", "consciencia"],
+    logica: "Pedir para a audiência encontrar o erro em algo que você mostra. Todo mundo quer mostrar que tem valor diante do líder da comunidade — esse dispositivo incentiva as pessoas a demonstrarem conhecimento e expertise.",
+    quando: "Use em sequências de consciência e engajamento. Excelente para nichos onde o público tem conhecimento e quer demonstrá-lo.",
+    exemplo: "\"Nessa página de vendas tem apenas um erro grave. Você conseguiu identificar? Me manda no inbox qual é.\"",
+    erro: "Colocar um erro óbvio demais (perde o engajamento) ou difícil demais (frustra). O erro precisa estar no nível intermediário — desafiador mas alcançável."
+  },
+  {
+    id: 32, nome: "DIÁRIO",
+    tipos: ["consciencia", "viral"],
+    logica: "Fazer um diário de um momento especial — natal, lançamento, aniversário, primeira vez fazendo algo importante. Explicar sentimentos, observações e experiências de um dia marcante cria muita conexão autêntica com a audiência.",
+    quando: "Use em momentos que têm carga emocional genuína. Não invente — o diário funciona quando o momento é real e o sentimento é verdadeiro.",
+    exemplo: "Fazer um diário do dia do lançamento: ansiedade de manhã, primeiras vendas, como foi — tudo em tempo real nos stories.",
+    erro: "Fazer um diário de um dia qualquer sem nada especial acontecendo. O diário funciona porque o momento é único — use com parcimônia para manter o impacto."
+  },
+  {
+    id: 33, nome: "CRÍTICA",
+    tipos: ["engajamento", "curiosidade"],
+    logica: "Deixar uma deixa para crítica — pedir que a audiência opine sobre algo com potencial polêmico ou subjetivo. As pessoas adoram dar sua opinião — a interação aumenta muito quando você pede crítica de algo.",
+    quando: "Use em sequências de engajamento. Funciona melhor quando o objeto da crítica é algo com opinião dividida no seu nicho.",
+    exemplo: "\"O que você diria para esse sujeito que [situação polêmica no seu nicho]? Me conta sua visão.\"",
+    erro: "Usar para coisas sem opinião clara — 'o que você acha desta cor?' não gera engajamento real. O tema precisa ter potencial de debate genuíno."
+  },
+  {
+    id: 34, nome: "DEMONSTRAÇÃO CURTA",
+    tipos: ["venda", "consciencia"],
+    logica: "Mostrar como a solução funciona na prática com uma experiência real e concisa. Uma das formas mais poderosas de convencer — ver algo funcionando reduz a resistência à compra mais do que qualquer argumento racional.",
+    quando: "Essencial em sequências de venda, especialmente para produtos digitais complexos. Coloque no meio da sequência depois da história e antes do CTA.",
+    exemplo: "Um vídeo de 30-60s mostrando o produto em uso real — uma aluna aplicando o método, uma transformação visível, um resultado sendo gerado ao vivo.",
+    erro: "Fazer uma demonstração longa ou técnica demais. A demonstração precisa ser curta o suficiente para ser assistida até o final no contexto de um story."
+  },
+  {
+    id: 35, nome: "ENQUETE COM CURIOSIDADE REAL",
+    tipos: ["venda", "curiosidade"],
+    logica: "Usar perguntas que o público todo tem curiosidade em saber a resposta, atrelando ao que você quer vender. Identifica quem é mais propenso a precisar da sua ajuda. As respostas alimentam os próximos dispositivos.",
+    quando: "Use no começo ou meio de sequências de venda. Os dados da enquete permitem personalizar os stories seguintes para as dores identificadas.",
+    exemplo: "\"Qual dessas situações mais te trava em [nicho]? A: [dor 1] B: [dor 2]. Responde aqui.\"",
+    erro: "Fazer a enquete e ignorar os resultados. Se muita gente escolheu a opção A, os próximos stories precisam falar sobre a dor A — não a dor B."
+  },
+  {
+    id: 36, nome: "LINK OCULTO",
+    tipos: ["venda", "curiosidade"],
+    logica: "Colocar o link do produto/serviço no story com um nome chamativo e inesperado que desperta curiosidade. O nome inesperado faz mais pessoas clicarem do que um CTA direto e óbvio.",
+    quando: "Use em qualquer momento de CTA, especialmente quando a audiência já conhece o produto. O link oculto é uma alternativa mais criativa ao 'clique no link'.",
+    exemplo: "\"Não seja curioso.\" (com o link direto para a página de vendas — óbvio que a audiência vai clicar)",
+    erro: "Usar o link oculto como único CTA sem nunca explicar o que é o produto. O link oculto complementa, não substitui os dispositivos de consciência."
+  },
+  {
+    id: 37, nome: "INDICAÇÃO PRETENSIOSA",
+    tipos: ["engajamento", "consciencia"],
+    logica: "Pedir indicações aos seguidores sobre algo externo — filme, livro, restaurante, produto. As pessoas amam dar indicações, principalmente para o líder da comunidade — isso aumenta muito a interação de forma natural e recíproca.",
+    quando: "Use em sequências de engajamento puro ou como stories de transição entre partes mais densas da sequência. Humaniza o comunicador.",
+    exemplo: "\"Queria assistir um filme bom este fim de semana. Você conhece algum que valha a pena?\"",
+    erro: "Usar com muita frequência — perde a naturalidade. Uma ou duas vezes por semana no máximo, integrado ao contexto da sequência."
+  },
+  {
+    id: 38, nome: "LEVANTE A MÃO",
+    tipos: ["venda"],
+    logica: "Fazer uma triagem no público para encontrar as pessoas mais prontas para comprar. Separa os 'frutos maduros' (prontos para comprar) dos 'frutos verdes' (ainda não prontos), economizando energia e direcionando esforço de vendas onde ele é mais eficiente.",
+    quando: "Use no final das sequências de venda, antes do CTA final. É o último filtro antes da abertura de carrinho. Quem levanta a mão vira prioridade no atendimento.",
+    exemplo: "\"Se você tem interesse em se tornar aluno do [produto] me manda um 'quero' por inbox. Quem mandar até [horário] ganha bônus exclusivo.\"",
+    erro: "Fazer a triagem e não atender quem levantou a mão. O dispositivo cria uma expectativa de atendimento — se você não responde, a confiança é destruída."
+  }
+];
+
+// Tipos de sequência com metadados
+const TIPOS_SEQUENCIA = [
+  {
+    icon: "💻", nome: "Venda de Produto Digital",
+    cadencia: "alta",
+    desc: "Sequência para vender cursos, mentorias, infoprodutos. Alta cadência pois a decisão de compra é mais complexa — precisa de mais contexto, mais provas e mais quebra de objeções.",
+    dispositivos: ["História com Gancho", "Demonstração Curta", "Cultura de Resultado", "Levante a Mão", "Abertura de Carrinho"]
+  },
+  {
+    icon: "📦", nome: "Venda de Produto Físico",
+    cadencia: "variavel",
+    desc: "Para produtos tangíveis. Pode ser cadência mais baixa pois a decisão de compra é mais simples. Uma demonstração visual forte + prova social pode ser suficiente.",
+    dispositivos: ["Demonstração Curta", "Cultura de Resultado", "Enquete com Curiosidade Real", "Abertura de Carrinho"]
+  },
+  {
+    icon: "📊", nome: "Engajamento Puro",
+    cadencia: "media",
+    desc: "Sem objetivo de venda direta. Foco em construir relacionamento, aumentar visualizações e criar uma audiência mais engajada que vai reagir melhor quando vier a sequência de venda.",
+    dispositivos: ["Pânico pelo Conteúdo", "Meta Coletiva", "Desabafo", "Piada Interna", "Peça Compartilhamento"]
+  },
+  {
+    icon: "🎯", nome: "Consciência de Produto",
+    cadencia: "baixa",
+    desc: "Apresentar o produto sem vender diretamente. Plantar a semente na mente da audiência — identidade, transformação, resultados. Prepara o terreno para a sequência de venda.",
+    dispositivos: ["Identidade do Produto", "Cultura de Resultado", "Demonstração Curta", "Micro Influência"]
+  },
+  {
+    icon: "🔥", nome: "Aquecimento para Pico de Vendas",
+    cadencia: "alta",
+    desc: "Os dias que antecedem a abertura de carrinho. Objetivo é elevar a consciência e o desejo ao máximo antes da venda começar. Quanto mais aquecimento, mais vendas na abertura.",
+    dispositivos: ["Ative a Notificação", "Cultura de Resultado", "Ansiedade pela Abertura", "Combustível Extra", "Levante a Mão"]
+  },
+  {
+    icon: "🚪", nome: "Abertura de Carrinho",
+    cadencia: "alta",
+    desc: "O dia da abertura. Cadência máxima — você está vendendo. Cada story empurra a audiência mais perto da decisão de compra.",
+    dispositivos: ["Combustível Extra", "Demonstração Curta", "Cultura de Resultado", "Abertura de Carrinho", "Levante a Mão"]
+  },
+  {
+    icon: "📬", nome: "Caixinha por Tema",
+    cadencia: "media",
+    desc: "Responder perguntas sobre um tema específico do seu nicho. Posiciona como especialista enquanto entrega valor real. Pode terminar com um CTA sutil.",
+    dispositivos: ["Pânico pelo Conteúdo", "Conversa sem Privacidade", "BI Apurado", "Micro Influência"]
+  },
+  {
+    icon: "🎁", nome: "Caixinha Geral",
+    cadencia: "baixa",
+    desc: "Responder perguntas gerais da audiência — incluindo pessoais. Humaniza o comunicador e cria conexão profunda. Sem objetivo de venda.",
+    dispositivos: ["Desabafo", "Identidade do Comunicador", "Indicação Pretensiosa", "Diário"]
+  },
+  {
+    icon: "🎪", nome: "Evento",
+    cadencia: "alta",
+    desc: "Divulgar e gerar expectativa por um evento — live, masterclass, webinário. Objetivo é lotação máxima e audiência aquecida no dia.",
+    dispositivos: ["Ative a Notificação", "Meta Coletiva", "Ansiedade pela Abertura", "Combustível Extra"]
+  },
+  {
+    icon: "🤝", nome: "Promoção de Parceiro",
+    cadencia: "variavel",
+    desc: "Divulgar o produto de um parceiro ou afiliado. Precisa de contexto e credibilidade — a recomendação precisa parecer genuína.",
+    dispositivos: ["História com Gancho", "Demonstração Curta", "Cultura de Resultado", "Abertura de Carrinho"]
+  },
+  {
+    icon: "📢", nome: "Divulgação de Conteúdo",
+    cadencia: "baixa",
+    desc: "Divulgar um conteúdo novo: vídeo, post, podcast, artigo. Objetivo é gerar tráfego e novas visualizações para o conteúdo.",
+    dispositivos: ["Pânico pelo Conteúdo", "Ative a Notificação", "Print Valioso", "Peça Compartilhamento"]
+  }
+];
+
+// Sequências geradas pelo gerador
+const SEQ_TEMPLATES = {
+  venda_digital: [
+    {id: 1, role: "Combustível extra — atrai audiência quente"},
+    {id: 6, role: "História com gancho — cria contexto emocional"},
+    {id: 34, role: "Demonstração — mostra o produto funcionando"},
+    {id: 7, role: "Cultura de resultado — prova social real"},
+    {id: 35, role: "Enquete — identifica prontos para comprar"},
+    {id: 11, role: "Abertura de carrinho — CTA com urgência"},
+    {id: 38, role: "Levante a mão — triagem de frutos maduros"}
+  ],
+  venda_fisico: [
+    {id: 24, role: "Você sabia — abre a mente com fato surpreendente"},
+    {id: 34, role: "Demonstração visual — produto em uso real"},
+    {id: 7, role: "Cultura de resultado — depoimentos reais"},
+    {id: 20, role: "Opinião de quem comprou — prova autêntica"},
+    {id: 11, role: "Abertura de carrinho — CTA com escassez"},
+    {id: 36, role: "Link oculto — CTA irresistível"},
+    {id: 38, role: "Levante a mão — triagem final"}
+  ],
+  engajamento: [
+    {id: 9, role: "Pânico pelo conteúdo — cria antecipação"},
+    {id: 6, role: "História com gancho — gera contexto"},
+    {id: 4, role: "Dia do hotseat — convida participação"},
+    {id: 13, role: "Alerta para voltar — aumenta retenção"},
+    {id: 15, role: "Print valioso — conteúdo para guardar"},
+    {id: 19, role: "Desabafo — conexão profunda"},
+    {id: 21, role: "Peça compartilhamento — expande alcance"}
+  ],
+  consciencia: [
+    {id: 24, role: "Fato surpreendente — abre a mente"},
+    {id: 6, role: "História de contexto — cria empatia"},
+    {id: 16, role: "Identidade do comunicador — quem é você"},
+    {id: 17, role: "Identidade do produto — o que é o produto"},
+    {id: 25, role: "Micro influência — recomendação de valor"},
+    {id: 20, role: "Opinião de quem comprou — prova social"},
+    {id: 14, role: "BI apurado — pesquisa de dores"}
+  ],
+  curiosidade: [
+    {id: 28, role: "Tarja de curiosidade — oculta o gancho"},
+    {id: 22, role: "Nome esquisito — quebra o padrão"},
+    {id: 27, role: "Elemento escondido — faz revisitar a sequência"},
+    {id: 29, role: "Psicologia reversa — subverte a expectativa"},
+    {id: 9, role: "Pânico pelo conteúdo — antecipação máxima"},
+    {id: 36, role: "Link oculto — CTA irresistível"},
+    {id: 33, role: "Crítica — convida debate"}
+  ],
+  viral: [
+    {id: 1, role: "Combustível extra — atrai de fora"},
+    {id: 5, role: "Meta coletiva — engaja todo mundo"},
+    {id: 8, role: "Piada interna — cria pertencimento"},
+    {id: 24, role: "Você sabia — fato que se compartilha"},
+    {id: 15, role: "Print valioso — conteúdo para guardar"},
+    {id: 21, role: "Peça compartilhamento — CTA de expansão"},
+    {id: 32, role: "Diário — conexão autêntica"}
+  ],
+  aquecimento: [
+    {id: 12, role: "Ativa a notificação — prepara a audiência"},
+    {id: 6, role: "História emocional — cria contexto de desejo"},
+    {id: 7, role: "Cultura de resultado — eleva expectativa"},
+    {id: 10, role: "Ansiedade pela abertura — FOMO ativado"},
+    {id: 1, role: "Combustível extra — expande para novos"},
+    {id: 38, role: "Levante a mão — identifica os maduros"},
+    {id: 11, role: "Abertura de carrinho — anuncia o dia D"}
+  ],
+  abertura: [
+    {id: 1, role: "Combustível extra — atrai todo mundo"},
+    {id: 9, role: "Pânico pelo conteúdo — cria urgência"},
+    {id: 34, role: "Demonstração — última prova antes da compra"},
+    {id: 7, role: "Cultura de resultado — prova social final"},
+    {id: 11, role: "Abertura de carrinho — CTA principal"},
+    {id: 38, role: "Levante a mão — atendimento personalizado"},
+    {id: 36, role: "Link oculto — CTA alternativo criativo"}
+  ],
+  caixinha: [
+    {id: 9, role: "Pânico pelo conteúdo — antecipa a caixinha"},
+    {id: 14, role: "BI apurado — coleta as perguntas"},
+    {id: 3, role: "Conversa sem privacidade — responde ao vivo"},
+    {id: 22, role: "Nome esquisito — nomeia um insight"},
+    {id: 25, role: "Micro influência — recomendação de valor"},
+    {id: 13, role: "Alerta para voltar — aumenta retenção"},
+    {id: 21, role: "Peça compartilhamento — expande alcance"}
+  ]
+};
+
+// ============================================================
+//  ESTADO
+// ============================================================
+let currentFilter = 'todos';
+let saved = [];
+try { saved = JSON.parse(localStorage.getItem('s10x_saved') || '[]'); } catch(e) {}
+let currentModalId = null;
+
+// ============================================================
+//  NAVEGAÇÃO
+// ============================================================
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ============================================================
+//  HELPERS
+// ============================================================
+function getTagHTML(tipo) {
+  const labels = { engajamento:'📊 Engajamento', venda:'💰 Venda', consciencia:'🎯 Consciência', curiosidade:'🔮 Curiosidade', viral:'🚀 Viral' };
+  return `<span class="tag ${tipo}">${labels[tipo]}</span>`;
+}
+function isSaved(id) { return saved.includes(id); }
+
+// ============================================================
+//  SALVOS
+// ============================================================
+function toggleSave(id, event) {
+  if (event) event.stopPropagation();
+  if (saved.includes(id)) { saved = saved.filter(s => s !== id); }
+  else { saved.push(id); }
+  try { localStorage.setItem('s10x_saved', JSON.stringify(saved)); } catch(e) {}
+  
+renderGrid(); renderSaved();
+  if (currentModalId === id) updateModalSaveBtn();
+}
+function toggleSaveFromModal() { if (currentModalId) toggleSave(currentModalId, null); }
+function updateModalSaveBtn() {
+  const btn = document.getElementById('modal-save-btn');
+  if (btn && currentModalId) btn.textContent = isSaved(currentModalId) ? '❤️ Salvo!' : '🤍 Salvar';
+}
+function renderSaved() {
+  const panel = document.getElementById('savedPanel');
+  const chips = document.getElementById('savedChips');
+  if (saved.length === 0) { panel.style.display = 'none'; return; }
+  panel.style.display = 'block';
+  chips.innerHTML = saved.map(id => {
+    const d = DISPOSITIVOS.find(d => d.id === id);
+    if (!d) return '';
+    return `<div class="saved-chip" onclick="openModal(${id})">${d.nome}<span class="saved-chip-remove" onclick="toggleSave(${id}, event)">×</span></div>`;
+  }).join('');
+}
+
+// ============================================================
+//  FILTROS E GRID
+// ============================================================
+function setFilter(tipo, btn) {
+  currentFilter = tipo;
+  document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderGrid();
+}
+function filterCards() { renderGrid(); }
+function getFiltered() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  return DISPOSITIVOS.filter(d => {
+    const matchFilter = currentFilter === 'todos' ? true :
+      currentFilter === 'salvos' ? isSaved(d.id) :
+      d.tipos.includes(currentFilter);
+    const matchSearch = !q || d.nome.toLowerCase().includes(q) ||
+      d.logica.toLowerCase().includes(q) || (d.exemplo||'').toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+}
+function renderGrid() {
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('emptyState');
+  const filtered = getFiltered();
+  if (filtered.length === 0) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  grid.innerHTML = filtered.map(d => {
+    const mainType = d.tipos[0];
+    const sv = isSaved(d.id);
+    return `<div class="card type-${mainType} ${sv ? 'saved' : ''}" onclick="openModal(${d.id})">
+      <div class="card-header">
+        <div class="num-badge">${d.id}</div>
+        <div class="card-title">${d.nome}</div>
+        <button class="save-btn ${sv ? 'saved' : ''}" onclick="toggleSave(${d.id}, event)">${sv ? '❤️' : '🤍'}</button>
+      </div>
+      <div class="tags">${d.tipos.map(getTagHTML).join('')}</div>
+      <div class="card-logic">${d.logica.substring(0, 115)}${d.logica.length > 115 ? '...' : ''}</div>
+      <div class="example-box">
+        <div class="example-label">💡 Exemplo</div>
+        <div class="example-text">${(d.exemplo||'').substring(0, 95)}${(d.exemplo||'').length > 95 ? '...' : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  updateCounts();
+}
+function updateCounts() {
+  ['engajamento','venda','consciencia','curiosidade','viral'].forEach(t => {
+    const cnt = DISPOSITIVOS.filter(d => d.tipos.includes(t)).length;
+    const el = document.getElementById('cnt-' + t);
+    if (el) el.textContent = cnt;
+  });
+}
+
+// ============================================================
+//  MODAL
+// ============================================================
+function openModal(id) {
+  const d = DISPOSITIVOS.find(d => d.id === id);
+  if (!d) return;
+  currentModalId = id;
+  document.getElementById('modal-num').textContent = `#${d.id}`;
+  document.getElementById('modal-title').textContent = d.nome;
+  document.getElementById('modal-tags').innerHTML = `<div class="tags">${d.tipos.map(getTagHTML).join('')}</div>`;
+  document.getElementById('modal-logic').textContent = d.logica;
+  document.getElementById('modal-example').textContent = d.exemplo || '';
+  const whenEl = document.getElementById('modal-when');
+  const whenSection = document.getElementById('modal-when-section');
+  if (d.quando) { whenEl.textContent = d.quando; whenSection.style.display='block'; }
+  else { whenSection.style.display='none'; }
+  const warnEl = document.getElementById('modal-warn');
+  const warnSection = document.getElementById('modal-warn-section');
+  if (d.erro) { warnEl.textContent = d.erro; warnSection.style.display='block'; }
+  else { warnSection.style.display='none'; }
+  updateModalSaveBtn();
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalBtn(); }
+function closeModalBtn() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  currentModalId = null;
+}
+
+// ============================================================
+//  GERADOR DE SEQUÊNCIAS
+// ============================================================
+function generateSequence() {
+  const objetivo = document.getElementById('seqObjetivo').value;
+  const qtd = parseInt(document.getElementById('seqQtd').value);
+  const steps = (SEQ_TEMPLATES[objetivo] || []).slice(0, qtd);
+  const selectEl = document.getElementById('seqObjetivo');
+  const labelText = selectEl.options[selectEl.selectedIndex].text.replace(/^[^\s]+\s/,'');
+
+  const output = document.getElementById('seqOutput');
+  output.innerHTML = `<div style="font-size:11px;color:var(--muted);margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border)">
+    ✨ Sequência para <strong>${labelText}</strong> — ${qtd} stories
+  </div>` +
+    steps.map((s, i) => {
+      const d = DISPOSITIVOS.find(d => d.id === s.id);
+      if (!d) return '';
+      return `<div class="seq-step" onclick="openModal(${d.id})">
+        <div class="seq-num">${i + 1}</div>
+        <div class="seq-content">
+          <div class="seq-name">${d.nome}</div>
+          <div class="seq-desc">${s.role} — ${d.logica.substring(0, 75)}...</div>
+        </div>
+      </div>`;
+    }).join('');
+  output.classList.add('visible');
+}
+
+// ============================================================
+//  PÁGINA DE SEQUÊNCIAS
+// ============================================================
+function renderTipos() {
+  const grid = document.getElementById('tiposGrid');
+  if (!grid) return;
+  grid.innerHTML = TIPOS_SEQUENCIA.map(t => `
+    <div class="tipo-card">
+      <div class="tipo-icon">${t.icon}</div>
+      <div class="tipo-nome">${t.nome}</div>
+      <div class="tipo-cadencia ${t.cadencia}">Cadência ${t.cadencia}</div>
+      <div class="tipo-desc">${t.desc}</div>
+      <div class="tipo-devices">${t.dispositivos.map(d => `<span class="tipo-device-tag">${d}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+renderGrid();
+renderSaved();
+renderTipos();
+</script>
+
+<!-- ============================================================ -->
+<!--  PAGE: IA CRIATIVA                                           -->
+<!-- ============================================================ -->
+<div id="page-ia" class="page">
+  <div class="ia-page">
+
+    <div class="ia-hero">
+      <h2>🤖 IA Criativa</h2>
+      <p>Descreva seu produto, público e objetivo. A IA vai montar uma sequência completa de stories usando os 38 dispositivos do método Leandro Ladeira — com script pronto para cada story.</p>
+      <span class="model-badge">GPT-4o-mini · API OpenAI</span>
+    </div>
+
+    <!-- CONFIG: API KEY -->
+    <div class="ia-block">
+      <div class="ia-block-title">🔑 Configuração</div>
+      <div class="ia-label">Sua API Key da OpenAI</div>
+      <div class="ia-key-row">
+        <input type="password" class="ia-input" id="iaApiKey" placeholder="sk-...">
+        <span class="ia-key-status none" id="iaKeyStatus">Sem chave</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:7px;line-height:1.6;">
+        💡 A chave fica salva localmente no browser. Não é enviada para nenhum servidor exceto a API da OpenAI.
+        <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--accent2);text-decoration:none;"> Obter chave →</a>
+      </div>
+    </div>
+
+    <!-- BRIEFING -->
+    <div class="ia-block">
+      <div class="ia-block-title">📝 Briefing da Sequência</div>
+
+      <div class="ia-row">
+        <div>
+          <div class="ia-label">Objetivo</div>
+          <select class="ia-select" id="iaObjetivo">
+            <option value="venda_digital">💰 Venda de Produto Digital</option>
+            <option value="venda_fisico">📦 Venda de Produto Físico</option>
+            <option value="engajamento">📊 Engajamento Puro</option>
+            <option value="consciencia">🎯 Consciência de Produto</option>
+            <option value="curiosidade">🔮 Despertar Curiosidade</option>
+            <option value="viral">🚀 Viralizar</option>
+            <option value="aquecimento">🔥 Aquecimento para Lançamento</option>
+            <option value="abertura">🚪 Abertura de Carrinho</option>
+          </select>
+        </div>
+        <div>
+          <div class="ia-label">Quantidade de Stories</div>
+          <select class="ia-select" id="iaQtdStories">
+            <option value="5">5 stories</option>
+            <option value="7" selected>7 stories</option>
+            <option value="10">10 stories</option>
+            <option value="15">15 stories</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ia-label">Produto ou Serviço</div>
+      <input type="text" class="ia-input" id="iaProduto" placeholder="Ex: Curso de investimentos para iniciantes, R$297">
+
+      <div class="ia-label">Público-Alvo</div>
+      <input type="text" class="ia-input" id="iaPublico" placeholder="Ex: Mulheres 25-40 anos que querem investir mas têm medo de perder dinheiro">
+
+      <div class="ia-label">Nicho / Contexto da Conta</div>
+      <input type="text" class="ia-input" id="iaNicho" placeholder="Ex: Educadora financeira, 15k seguidores, posts sobre independência financeira">
+
+      <div class="ia-label">Tom de Comunicação</div>
+      <select class="ia-select" id="iaTom">
+        <option value="direto">🎯 Direto e objetivo</option>
+        <option value="descontraido">😄 Descontraído e próximo</option>
+        <option value="autoridade">🏛️ Autoridade e expertise</option>
+        <option value="storytelling">📖 Storytelling emocional</option>
+        <option value="provocativo">⚡ Provocativo e desafiador</option>
+      </select>
+
+      <div class="ia-label">Contexto Extra (opcional)</div>
+      <textarea class="ia-input" id="iaContexto" placeholder="Ex: Lançamento amanhã, estou em viagem, tenho um case de aluna que ganhou R$3k em 30 dias..."></textarea>
+
+      <button class="ia-generate-btn" id="iaBtn">
+        ✨ Gerar Sequência com IA
+      </button>
+      <!-- ERROR -->
+      <div class="ia-error" id="iaError" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="ia-loading" id="iaLoading">
+      <div class="ia-spinner"></div>
+      <p>A IA está criando sua sequência com os dispositivos do método...</p>
+    </div>
+
+
+    <!-- RESULTADO -->
+    <div class="ia-result" id="iaResult">
+      <div class="ia-result-header">
+        <div class="ia-result-title" id="iaResultTitle">✅ Sequência Gerada</div>
+        <button class="ia-copy-btn">📋 Copiar Tudo</button>
+      </div>
+      <div id="iaResultBody"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+
+// Bind eventos depois que o DOM estiver pronto
+document.addEventListener('DOMContentLoaded', function() {
+  var keyEl = document.getElementById('iaApiKey');
+  if (keyEl) keyEl.addEventListener('input', checkApiKey);
+
+  var btnEl = document.getElementById('iaBtn');
+  if (btnEl) btnEl.addEventListener('click', gerarComIA);
+
+  var copyEl = document.querySelector('.ia-copy-btn');
+  if (copyEl) copyEl.addEventListener('click', copiarResultado);
+});
+
+</script>
+
+<script>
+// ============================================================
+//  IA CRIATIVA — GPT-4o-mini Integration
+// ============================================================
+var IA_KEY_STORAGE = 'storylabkit_openai_key';
+
+// Restaura chave salva ao carregar a página
+document.addEventListener('DOMContentLoaded', function() {
+  var saved = localStorage.getItem(IA_KEY_STORAGE);
+  if (saved) {
+    var el = document.getElementById('iaApiKey');
+    if (el) { el.value = saved; checkApiKey(); }
+  }
+});
+
+function checkApiKey() {
+  var val = document.getElementById('iaApiKey').value.trim();
+  var status = document.getElementById('iaKeyStatus');
+  if (val.startsWith('sk-') && val.length > 20) {
+    localStorage.setItem(IA_KEY_STORAGE, val);
+    status.textContent = '✓ Salva';
+    status.className = 'ia-key-status ok';
+  } else {
+    status.textContent = 'Sem chave';
+    status.className = 'ia-key-status none';
+  }
+}
+
+async function gerarComIA() {
+  var apiKey = document.getElementById('iaApiKey').value.trim();
+  if (!apiKey.startsWith('sk-') || apiKey.length < 20) {
+    iaShowError('⚠️ Insira sua API Key da OpenAI no campo acima. Começa com sk- e tem mais de 50 caracteres.');
+    document.getElementById('iaApiKey').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  var produto = document.getElementById('iaProduto').value.trim();
+  var publico = document.getElementById('iaPublico').value.trim();
+  var nicho   = document.getElementById('iaNicho').value.trim();
+  var objetivo= document.getElementById('iaObjetivo').value;
+  var qtd     = document.getElementById('iaQtdStories').value;
+  var tom     = document.getElementById('iaTom').value;
+  var contexto= document.getElementById('iaContexto').value.trim();
+
+  if (!produto || !publico) {
+    iaShowError('Preencha pelo menos o Produto e o Público-Alvo antes de gerar.');
+    return;
+  }
+
+  var objetivoLabels = {
+    venda_digital: 'Venda de Produto Digital',
+    venda_fisico: 'Venda de Produto Físico',
+    engajamento: 'Engajamento Puro',
+    consciencia: 'Consciência de Produto',
+    curiosidade: 'Despertar Curiosidade',
+    viral: 'Viralizar',
+    aquecimento: 'Aquecimento para Lançamento',
+    abertura: 'Abertura de Carrinho'
+  };
+  var tomLabels = {
+    direto: 'Direto e objetivo',
+    descontraido: 'Descontraído e próximo',
+    autoridade: 'Autoridade e expertise',
+    storytelling: 'Storytelling emocional',
+    provocativo: 'Provocativo e desafiador'
+  };
+
+  // Pega nomes dos dispositivos do array global
+  var dispositivosResumido = '';
+  if (typeof DISPOSITIVOS !== 'undefined') {
+    dispositivosResumido = DISPOSITIVOS.slice(0,38).map(function(d) {
+      return 'D' + d.id + ' - ' + d.nome + ': ' + (d.logica||'').substring(0,100);
+    }).join('\n');
+  }
+
+  var systemPrompt = 'Você é um especialista no Método de Engenharia Social de Leandro Ladeira — criação de sequências de stories no Instagram usando dispositivos de engenharia social para guiar o público de Atenção para Conexão para Venda.\n\nDISPOSITIVOS DISPONÍVEIS (38 ao total):\n' + dispositivosResumido + '\n\nSua tarefa: criar uma sequência de stories COMPLETA e PRONTA PARA USAR, usando os dispositivos mais adequados para o objetivo.\n\nREGRAS OBRIGATÓRIAS:\n1. Cada story deve indicar qual dispositivo está usando (número + nome)\n2. O script de cada story deve ser REAL e ESPECÍFICO — use o produto, o público e o nicho fornecidos\n3. A sequência deve ter abertura forte, desenvolvimento e fechamento com CTA claro\n4. Adapte o tom conforme solicitado\n5. Inclua uma dica técnica de execução para cada story\n6. Responda em JSON no formato exato especificado\n\nFORMATO DE RESPOSTA (JSON puro, sem markdown):\n{"titulo":"Sequência: [descrição curta]","stories":[{"numero":1,"dispositivo_id":1,"dispositivo_nome":"NOME","papel":"papel na sequência","script":"texto completo do story","dica":"dica de execução"}],"estrategia":"parágrafo explicando a lógica"}';
+
+  var userPrompt = 'Crie uma sequência de ' + qtd + ' stories para:\n\nPRODUTO: ' + produto + '\nPÚBLICO: ' + publico + '\nNICHO DA CONTA: ' + (nicho || 'Não informado') + '\nOBJETIVO: ' + (objetivoLabels[objetivo]||objetivo) + '\nTOM: ' + (tomLabels[tom]||tom) + (contexto ? '\nCONTEXTO EXTRA: ' + contexto : '') + '\n\nEscolha os ' + qtd + ' dispositivos mais adequados e crie scripts REAIS, específicos e prontos para usar.';
+
+  iaSetLoading(true);
+  iaClearError();
+  iaHideResult();
+
+  try {
+    var response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.8,
+        max_tokens: 3000
+      })
+    });
+
+    if (!response.ok) {
+      var err = {};
+      try { err = await response.json(); } catch(e) {}
+      throw new Error(err.error && err.error.message ? err.error.message : 'Erro ' + response.status + '. Verifique sua API Key e saldo na OpenAI.');
+    }
+
+    var data = await response.json();
+    var content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) ? data.choices[0].message.content : '';
+
+    var parsed;
+    try {
+      var clean = content.replace(/^```json\n?/, '').replace(/^```\n?/, '').replace(/```$/, '').trim();
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      throw new Error('A IA retornou um formato inesperado. Tente novamente.');
+    }
+
+    iaRenderResultado(parsed, objetivoLabels[objetivo], qtd);
+
+  } catch(err) {
+    iaShowError('❌ ' + (err.message || 'Erro desconhecido. Tente novamente.'));
+  } finally {
+    iaSetLoading(false);
+  }
+}
+
+function iaRenderResultado(data, objetivoLabel, qtd) {
+  document.getElementById('iaResultTitle').textContent = '✅ ' + (data.titulo || 'Sequência Gerada');
+  var html = '';
+  if (data.estrategia) {
+    html += '<div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#cccce0;line-height:1.6;">💡 <strong>Estratégia:</strong> ' + data.estrategia + '</div>';
+  }
+  (data.stories || []).forEach(function(s) {
+    html += '<div class="ia-story-card"><div class="ia-story-header"><div class="ia-story-num">' + s.numero + '</div><div><div class="ia-story-device">D' + s.dispositivo_id + ' · ' + s.dispositivo_nome + '</div></div><div class="ia-story-role">' + (s.papel||'') + '</div></div><div class="ia-story-script">' + (s.script||'').replace(/\n/g,'<br>') + '</div>' + (s.dica ? '<div class="ia-story-tip">🎬 ' + s.dica + '</div>' : '') + '</div>';
+  });
+  document.getElementById('iaResultBody').innerHTML = html;
+  document.getElementById('iaResult').classList.add('visible');
+  document.getElementById('iaResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function copiarResultado() {
+  var cards = document.querySelectorAll('.ia-story-card');
+  var texto = document.getElementById('iaResultTitle').textContent + '\n\n';
+  cards.forEach(function(c) {
+    var num    = c.querySelector('.ia-story-num') ? c.querySelector('.ia-story-num').textContent : '';
+    var device = c.querySelector('.ia-story-device') ? c.querySelector('.ia-story-device').textContent : '';
+    var script = c.querySelector('.ia-story-script') ? c.querySelector('.ia-story-script').innerText : '';
+    var dica   = c.querySelector('.ia-story-tip') ? c.querySelector('.ia-story-tip').innerText : '';
+    texto += 'STORY ' + num + ' — ' + device + '\n' + script + '\n' + (dica ? dica + '\n' : '') + '\n';
+  });
+  navigator.clipboard.writeText(texto).then(function() {
+    var btn = document.querySelector('.ia-copy-btn');
+    btn.textContent = '✅ Copiado!';
+    setTimeout(function() { btn.textContent = '📋 Copiar Tudo'; }, 2000);
+  });
+}
+
+function iaSetLoading(on) {
+  document.getElementById('iaLoading').className = 'ia-loading' + (on ? ' visible' : '');
+  document.getElementById('iaBtn').disabled = on;
+  document.getElementById('iaBtn').textContent = on ? '⏳ Gerando com IA...' : '✨ Gerar Sequência com IA';
+}
+function iaShowError(msg) {
+  var el = document.getElementById('iaError');
+  el.textContent = msg;
+  el.className = 'ia-error visible';
+  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function iaClearError() { document.getElementById('iaError').className = 'ia-error'; }
+function iaHideResult() { document.getElementById('iaResult').className = 'ia-result'; }
+
+
+// Bind eventos via addEventListener (evita problema de ordem de carregamento)
+document.addEventListener('DOMContentLoaded', function() {
+  var keyEl = document.getElementById('iaApiKey');
+  if (keyEl) { keyEl.addEventListener('input', checkApiKey); }
+
+  var btnEl = document.getElementById('iaBtn');
+  if (btnEl) { btnEl.addEventListener('click', gerarComIA); }
+
+  // copy btn — adicionado dinamicamente então usa delegação
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('ia-copy-btn')) { copiarResultado(); }
+  });
+});
+
+</script>
+</body>
+</html>
